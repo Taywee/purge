@@ -1,3 +1,7 @@
+# Temp files
+.*.sw?
+*.pyc
+
 # Object files
 *.o
 *.ko
@@ -27,6 +31,7 @@
 *.i*86
 *.x86_64
 *.hex
+purge
 
 # Debug files
 *.dSYM/
