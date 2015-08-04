@@ -16,6 +16,67 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// 
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <string.h>
+
+unsigned long dbj2(const unsigned char *str)
+{
+    unsigned long hash = 5381;
+    unsigned long c;
+
+    while ((c = *str++) != 0)
+    {
+        hash = ((hash << 5) + hash) ^ c;
+    }
+
+    return hash;
+}
+
+typedef struct _node
+{
+    time_t seconds;
+    time_t days; 
+    time_t weeks; 
+    time_t months; 
+    time_t years; 
+    char *name;
+    unsigned long hash;
+} node;
+
 int main(int argc, char **argv)
 {
+    // days, weeks, months, years
+    unsigned long matches[4] = {0, 0, 0, 0};
+
+    int opt;
+    while ((opt = getopt(argc, argv, "d:w:m:y:")) != -1)
+    {
+        switch (opt)
+        {
+            case 'd':
+                {
+                    ++matches[0];
+                    break;
+                }
+            case 'w':
+                {
+                    ++matches[1];
+                    break;
+                }
+            case 'm':
+                {
+                    ++matches[2];
+                    break;
+                }
+            case 'y':
+                {
+                    ++matches[3];
+                    break;
+                }
+        }
+    }
+    return 0;
 }
