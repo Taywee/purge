@@ -3,7 +3,7 @@ CFLAGS=-c -Wall
 LDFLAGS=
 SOURCES=main.c
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=purge
+EXECUTABLE=retain
 
 all: $(SOURCES) $(EXECUTABLE)
 
