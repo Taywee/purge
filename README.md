@@ -12,12 +12,11 @@ A specified timestamp format will match all files in the directory that match
 the timestamp, and ignore all others.
 
 Time intervals are taken in a cron-like manner, but options are passed to
-flags.  The format is usually `[count]{:[specifier{,specifier...}]}{/every}`, where
+flags.  The format is usually `[count]{:[specifier]}{/every}`, where
 `every` is 1 by default.
-For example, if you want weekly backups on sundays and wednesdays, skipping 2
-(So in order, you'd save sunday, skip wednesday, skip sunday, save
-wednesday,etc), retaining 7 copies, you'd just specify the -w flag as
-`-w '7:0,3/3'`
+For example, if you want weekly backups on sundays, skipping 2 (So you'd have
+Sunday, skip 2 sundays, etc), retaining 7 copies, you'd just specify the -w
+flag as `-w '7:0/3'` or even just `-w 7:3`.
 
 In order to remain consintent, the `every` is judged as an extension of the
 Unix epoch, and times are judged based on the latest timestamp in the
@@ -39,8 +38,8 @@ The retention specifiers are as follows:
 
 daily:      -d  specifier is not used
 weekday:    -w  specifier is day of week, as in crontab, 0=Sunday. default = 0
-monthday:   -m  specifier is day of month. default = 1
-yearmonth:  -y  specifier is month of year, starting with 1. default = 1
+monthday:   -m  specifier is day of month. default = 1.
+yearmonth:  -y  specifier is month of year, starting with 1. default = 1.
 
 examples:
 
