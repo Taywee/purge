@@ -1,22 +1,30 @@
 # retain
-Small POSIX program that specifically purges timestamped file/directory sets
-based on a retention scheme
+Small console program that specifically sorts and selects timestamped
+file/directory sets based on a retention scheme
 
-This assumes that daily backups (or some similar backup scheme) is already
-taking place.  This program will then take those backups and purge them in a
-pattern that matches a retention scheme.
+This assumes that daily backups (or some similar backup scheme) are already
+taking place.  You feed this program the list of file or directory names (on
+standard input, newline-separated), a time formatter, and a list of retention
+rules, and it will output which ones should be deleted.
 
 Timestamps may be stored in any format that strptime will understand.
 
-A specified timestamp format will match all files in the directory that match
-the timestamp, and ignore all others.
+Inputs that do not match the timestamp format at the beginning of their strings
+will not be considered, and will not be output for either a keep or a delete
+output.
 
-Time intervals are taken in a cron-like manner, but options are passed to
-flags.  The format is usually `[count]{:[specifier]}{/every}`, where
-`every` is 1 by default.
+If filenames do not have timestamps, you may extract the timestamp from the
+mtime (or anywhere else you may have it), and emplace it at the front of the
+string, separated with a slash from the filename, specifying this behavior with
+-s.
+
+Timestamp format is usually `[count]{:[specifier]}{/every}`, where `every` is 1
+by default.
 For example, if you want weekly backups on sundays, skipping 2 (So you'd have
 Sunday, skip 2 sundays, etc), retaining 7 copies, you'd just specify the -w
 flag as `-w '7:0/3'` or even just `-w 7:3`.
+The specifier matches its cron counterpart.
+
 
 In order to remain consintent, the `every` is judged as an extension of the
 Unix epoch, and times are judged based on the latest timestamp in the
@@ -31,8 +39,22 @@ also for things like yearlies, if you wanted to keep a january, but had set it
 up on February, it will keep a February until the next junuary backup comes
 around).
 
+Remember that the count is a literal count, not a period.  If you specify 1
+yearly backup for january, it means to keep 1 yearly January backup (the most
+recent January), not to retain at least 1 backup that is at least a year old.
+Come January, you will only have 1 yearly backup from your present month.
+
+The timestamps are strict, even when they are not supplied enough information.
+This means that if you have a pattern of just year and month, the day of month
+will be assumed to be 1, and hour, minute, and second will all be 0.  If you
+specify a monthday match of the 2nd, it will not match any such timestamps.
+
 Each retention specifier is handled individually, and may be used more than
 once.  This means that multiple specifiers may (intentionally) have overlap.
+
+-r and -k are flags for "remove" and "keep".  remove is the default
+functionality, outputting files that are to be removed.  Specifying both simply
+sets the behavior to the last-specified flag.
 
 The retention specifiers are as follows:
 
