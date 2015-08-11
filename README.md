@@ -20,27 +20,27 @@ string, separated with a slash from the filename, specifying this behavior with
 
 Timestamp format is usually `[count]{:[specifier]}{/every}`, where `every` is 1
 by default.
-For example, if you want weekly backups on sundays, skipping 2 (So you'd have
-Sunday, skip 2 sundays, etc), retaining 7 copies, you'd just specify the -w
+For example, if you want weekly backups on Sundays, skipping 2 (So you'd have
+Sunday, skip 2 Sundays, etc), retaining 7 copies, you'd just specify the -w
 flag as `-w '7:0/3'` or even just `-w 7:3`.
 The specifier matches its cron counterpart.
 
 
-In order to remain consintent, the `every` is judged as an extension of the
+In order to remain consistent, the `every` is judged as an extension of the
 Unix epoch, and times are judged based on the latest timestamp in the
-directory, not prestent time.  Gaps are accounted for, so if you have 7 weekly
+directory, not present time.  Gaps are accounted for, so if you have 7 weekly
 backups, but you have a 3-month gap between 3 and the other 4 of them, all 7
 will be kept. Similarly, if there aren't enough backups, the rest will "bunch
 up" at the end, so if you have a set of dailies going back 3 weeks, but specify
 retention of 7 weeklies, you'll get 3 weeklies and the other 4 oldest backups
 in the set.  This is primarily done to ease filesystem use prediction and to
 keep backups near the beginning of an active scheme from being so thin (and
-also for things like yearlies, if you wanted to keep a january, but had set it
-up on February, it will keep a February until the next junuary backup comes
+also for things like yearlies, if you wanted to keep a January, but had set it
+up on February, it will keep a February until the next January backup comes
 around).
 
 Remember that the count is a literal count, not a period.  If you specify 1
-yearly backup for january, it means to keep 1 yearly January backup (the most
+yearly backup for January, it means to keep 1 yearly January backup (the most
 recent January), not to retain at least 1 backup that is at least a year old.
 Come January, you will only have 1 yearly backup from your present month.
 
@@ -52,15 +52,15 @@ specify a monthday match of the 2nd, it will not match any such timestamps.
 Each retention specifier is handled individually, and may be used more than
 once.  This means that multiple specifiers may (intentionally) have overlap.
 
--r and -k are flags for "remove" and "keep".  remove is the default
+-r and -k are flags for "remove" and "keep".  Remove is the default
 functionality, outputting files that are to be removed.  Specifying both simply
 sets the behavior to the last-specified flag.
 
 The retention specifiers are as follows:
 
 daily:      -d  specifier is not used
-weekday:    -w  specifier is day of week, as in crontab, 0=Sunday. default = 0
-monthday:   -m  specifier is day of month. default = 1.
+weekday:    -w  specifier is day of week, as in crontab, 0=Sunday. Default = 0
+monthday:   -m  specifier is day of month. Default = 1.
 yearmonth:  -y  specifier is month of year, starting with 1. default = 1.
 
 examples:
@@ -71,7 +71,7 @@ examples:
 ### Every other day for a month
 -d 15/2
 
-### Every sunday for a month
+### Every Sunday for a month
 -w 4:0
 
 ### Every other Saturday for two months
@@ -80,5 +80,5 @@ examples:
 ### Two times a month, at the beginning and middle, for a year
 -m 24:1,15
 
-### A yearly backup on january that lasts 10 years
+### A yearly backup on January that lasts 10 years
 -y 10:1
