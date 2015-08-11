@@ -56,6 +56,8 @@ once.  This means that multiple specifiers may (intentionally) have overlap.
 functionality, outputting files that are to be removed.  Specifying both simply
 sets the behavior to the last-specified flag.
 
+Time formatter is specified with -f.
+
 The retention specifiers are as follows:
 
 daily:      -d  specifier is not used

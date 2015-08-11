@@ -1,5 +1,5 @@
 /*
-    purge: A drop-in backup retention manager for systems that already take dailies
+    retain: A drop-in backup retention manager for systems that already make dailies
     Copyright (C) 2015 Taylor C. Richberger <taywee@gmx.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -17,79 +17,13 @@
 */
 
 #define _XOPEN_SOURCE
-#define _DEFAULT_SOURCE
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+#include <stdbool.h>
 #include <unistd.h>
-#include <string.h>
+#include <stdio.h>
 
-typedef struct _node
-{
-    char *name;
+#include "selector.h"
 
-    struct tm tm;
-    // Each time_t struct is in the unit since the Unix Epoch.  This is used for "each" calculations.
-    time_t seconds; 
-    time_t days; 
-    time_t weeks; 
-    time_t months; 
-    time_t years; 
-} node;
-
-/**
- * Make a node from a filename and other information.
- *
- * \param filename The filename to pass in.  The node takes ownership of the filename.
- * \param timestamp The timestamp string to match. Used as the "s" argument in strptime.  If NULL, filename is tested for the timestamp.
- * \param timeformat The time formatter to use. Used as the "format" argument in strptime.
- * \returns The node.  Pass into freenode to free it.  If you free it directly, you will leak memory.
- */
-static node *makenode(char *filename, const char *timestamp, const char *timeformat);
-
-typedef enum _stype
-{
-    begin,
-    daily,
-    weekly,
-    monthly,
-    yearly
-} stype;
-
-typedef struct _selector {
-    // If type is "begin", then count is actually the number of stored elements, not including the beginning.
-    // If type is "begin", then specifier is actually the reserved number of slots in the list (not bytes).
-    stype type;
-    size_t count;
-    size_t specifier;
-    unsigned int every;
-} selector;
-
-/// Do not use selectorlist as an array.  You must iterate through it by use of listbegin (returning a pointer to the beginning of the list) and listend (returning the past-the-end pointer), or use the listbegin pointer as an array directly.
-typedef selector * selectorlist;
-
-#define listbegin(list) (list + 1)
-#define listend(list) (list + 1 + list[0].count)
-// listsize and listreserved both return lvalues
-#define listsize(list) (list[0].count)
-#define listreserved(list) (list[0].specifier)
-
-static selectorlist makeselectorlist(void);
-#define freeselectorlist(list) free (list)
-
-/**
- * Parse an option string into a selector struct
- *
- * \param option The option string in [count]{:[specifier]}{/every} form
- * \param type The type of string, as a member from the enum
- * \returns The selector
- */
-static selector parseoption(const char * const option, stype const type);
-
-/**
- * Add the selector to the null-terminated selector array, reallocating.
- */
-static void addselector(selectorlist list, selector *item);
+static void usage(const char * const progname);
 
 int main(int argc, char **argv)
 {
@@ -97,32 +31,67 @@ int main(int argc, char **argv)
     selectorlist selectors = makeselectorlist();
 
     int opt;
-    while ((opt = getopt(argc, argv, "d:w:m:y:")) != -1)
+    bool splittime = false;
+    bool remove = true;
+    const char * formatter = "%FT%T";
+    while ((opt = getopt(argc, argv, "d:f:hkm:rsw:y:")) != -1)
     {
         switch (opt)
         {
             case 'd':
                 {
-                    selector s = parseoption(optarg, daily);
+                    selector s = paseselector(optarg, daily);
                     addselector(selectors, &s);
                     break;
                 }
-            case 'w':
+            case 'f':
                 {
-                    selector s = parseoption(optarg, weekly);
-                    addselector(selectors, &s);
+                    formatter = optarg;
+                    break;
+                }
+            case 'h':
+                {
+                    usage(argv[0]);
+                    return 0;
+                    break;
+                }
+            case 'k':
+                {
+                    remove = false;
                     break;
                 }
             case 'm':
                 {
-                    selector s = parseoption(optarg, monthly);
+                    selector s = paseselector(optarg, monthly);
+                    addselector(selectors, &s);
+                    break;
+                }
+            case 'r':
+                {
+                    remove = true;
+                    break;
+                }
+            case 's':
+                {
+                    splittime = true;
+                    break;
+                }
+            case 'w':
+                {
+                    selector s = paseselector(optarg, weekly);
                     addselector(selectors, &s);
                     break;
                 }
             case 'y':
                 {
-                    selector s = parseoption(optarg, yearly);
+                    selector s = paseselector(optarg, yearly);
                     addselector(selectors, &s);
+                    break;
+                }
+            default:
+                {
+                    usage(argv[0]);
+                    return 1;
                     break;
                 }
         }
@@ -169,122 +138,38 @@ int main(int argc, char **argv)
     return 0;
 }
 
-node *makenode(char *filename, const char *timestamp, const char *timeformat)
+void usage(const char * const progname)
 {
-    struct tm tm;
-    if (!timestamp)
-    {
-        timestamp = filename;
-    }
-    if (strptime(timestamp, timeformat, &tm))
-    {
-        node *output = malloc(sizeof(node));
-        output->tm = tm;
-        // Ignore timezones.  If the timestamp expresses a sunday at midnight, and you did local time, it could actually think the file is a saturday, based on gmtime.
-        output->seconds = timegm(&output->tm);
-        output->days = output->seconds / 86400;
-        output->weeks = output->days / 7;
-        output->years = output->tm.tm_year - 70;
-        output->months = (output->years * 12) + output->tm.tm_mon;
+    printf("%s:\n"
+            "\tSmall console program that specifically sorts and selects timestamped\n"
+            "\tfile/directory sets based on a retention scheme, in order to remove them\n"
+            "\tand stay on a strict and predictable retention schedule.\n\n"
 
-        output->name = filename;
-        
-        return (output);
-    } else
-    {
-        return NULL;
-    }
-}
+            "\tFilenames are piped in (one per line.  Spaces are interpreted as being\n"
+            "\tembedded in the filename. Filenames with embedded newlines are not\n"
+            "\taccepted).\n\n"
 
-static selector parseoption(const char * const option, stype const type)
-{
-    selector output;
-    output.type = type;
+            "\tFilenames ordinarily are expected to have an embedded timestamp, though\n"
+            "\tthis behavior can be changed through the -s option.\n\n"
 
-    switch (type)
-    {
-        case monthly:
-        case yearly:
-            {
-                output.specifier = 1;
-                break;
-            }
-        default:
-            {
-                output.specifier = 0;
-                break;
-            }
-    }
+            "\t-d [selector]   Add a daily selector to the list\n"
+            "\t-w [selector]   Add a weekly selector to the list\n"
+            "\t-m [selector]   Add a monthly selector to the list\n"
+            "\t-y [selector]   Add a yearly selector to the list\n"
+            "\t-f [formatter]  Specify the time formatter (normally defaults to\n"
+            "\t                \"%%FT%%T\"). If -s is used, this formatter may not have slashes.\n"
+            "\t-h              Display this help menu.\n"
+            "\t-k              Output files to keep instead of ones to remove.\n"
+            "\t-r              Output files to remove instead of ones to keep.\n"
+            "\t-s              Take the timestamp as a separate string, specified first on\n"
+            "\t                the line and separated from the actual filename by a slash\n"
+            "\t                (like timestamp/filename, or timestamp//path/to/file for an\n"
+            "\t                absolute path).\n\n"
 
-    output.every = 1;
-
-    char const * const colon = strchr(option, ':');
-    char const * const slash = strchr(option, '/');
-
-    char * endptr;
-    output.count = strtoul(option, &endptr, 10);
-
-    if (endptr == option)
-    {
-        fprintf(stderr, "You have not specified a valid count for option string \"%s\", so it has been defaulted to 0 (which matches nothing).\n", option);
-        output.count = 0;
-    }
-
-    if (colon)
-    {
-        output.specifier = strtoul(colon + 1, &endptr, 10);
-
-        if (endptr == colon + 1)
-        {
-            fprintf(stderr, "You specified a colon, but have not specified a valid specifier for option string \"%s\", so it has been defaulted to 0 (1 for day of month or month of year).\n", option);
-            output.specifier = 0;
-        }
-    }
-
-    if (slash)
-    {
-        output.every = strtoul(slash + 1, &endptr, 10);
-
-        if (endptr == slash + 1)
-        {
-            fprintf(stderr, "You specified a slash, but have not specified a valid every for option string \"%s\", so it has been defaulted to 0 (1 for day of month or month of year).\n", option);
-            output.every = 0;
-        }
-    }
-
-    if (*endptr)
-    {
-        fprintf(stderr, "There were trailing junk characters that were not used in option string \"%s\", these were \"%s\".\n", option, endptr);
-    }
-
-    return output;
-}
-
-void addselector(selectorlist list, selector *item)
-{
-    ++listsize(list);
-    if (listsize(list) == listreserved(list))
-    {
-        listreserved(list) *= 2;
-
-        selectorlist newlist = realloc(list, listreserved(list) * sizeof(selector));
-        if (newlist)
-        {
-            list = newlist;
-        } else
-        {
-            fputs("Realloc failed!  Program can not be trusted to execute properly!  Exiting now with failure!", stderr);
-            exit(EXIT_FAILURE);
-        }
-    }
-    list[listsize(list)] = *item;
-}
-
-selectorlist makeselectorlist(void)
-{
-    selectorlist selectors = malloc(sizeof(selector) * 1);
-    selectors[0].type = begin;
-    selectors[0].count = 0;
-    selectors[0].specifier = 1;
-    return selectors;
+            "\tretain   Copyright (C) 2015  Taylor C. Richberger <taywee@gmx.com>\n"
+            "\tThis program comes with ABSOLUTELY NO WARRANTY.  This is free\n"
+            "\tsoftware, and you are welcome to redistribute it under the terms\n"
+            "\tof the GNU General Public License as published by the Free Software\n"
+            "\tFoundation, either version 3 of the License, or (at your option)\n"
+            "\tany later version.\n", progname);
 }
