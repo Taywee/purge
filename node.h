@@ -32,11 +32,14 @@ typedef struct _node
     time_t years; 
 } node;
 
+// static initialization sets everything to zero.
+static const node emptynode;
+
 /**
  * Make a node from a filename and other information.
  *
- * \param filename The filename to pass in.  The node takes ownership of the filename.
- * \param timestamp The timestamp string to match. Used as the "s" argument in strptime.  If NULL, filename is tested for the timestamp.
+ * \param filename The filename to pass in.
+ * \param timestamp The timestamp string to match. Used as the "s" argument in strptime.
  * \param timeformat The time formatter to use. Used as the "format" argument in strptime.
  * \returns The node.  Pass into freenode to free it.  If you free it directly, you will leak memory.
  */

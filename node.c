@@ -19,13 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+// static initialization sets everything to zero.
+static const node emptynode;
+
 node *makenode(const char * const filename, const char * timestamp, const char * const timeformat)
 {
-    struct tm tm;
-    if (!timestamp)
-    {
-        timestamp = filename;
-    }
+    // zero-initialize tm
+    struct tm tm = emptynode.tm;
+
     if (strptime(timestamp, timeformat, &tm))
     {
         node *output = malloc(sizeof(node));

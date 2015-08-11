@@ -17,11 +17,14 @@
 */
 
 #define _XOPEN_SOURCE
+#define _DEFAULT_SOURCE
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "selector.h"
+#include "node.h"
 
 static void usage(const char * const progname);
 
@@ -97,40 +100,69 @@ int main(int argc, char **argv)
         }
     }
 
+    char *line = NULL;
+    ssize_t size = 0;
+    size_t bufsize = 0;
+    while ((size = getline(&line, &bufsize, stdin)) != -1)
+    {
+        line[size - 1] = '\0';
+        const char * filename;
+        const char * timestamp;
+        if (splittime)
+        {
+            char * const slash = strchr(line, '/');
+            if (!slash)
+            {
+                fprintf(stderr, "-s is specified but line has no slash, skipping: %s\n", line);
+                continue;
+            }
+
+            // Split filename and timestamp into separate contiguous strings
+            *slash = '\0';
+            filename = slash + 1;
+            timestamp = line;
+        } else
+        {
+            filename = line;
+            timestamp = line;
+        }
+
+        printf("Filename: %s\n", filename);
+        printf("Timestamp: %s\n", timestamp);
+        node *n = makenode(filename, timestamp, formatter);
+        if (n)
+        {
+            printf("Proper timestamp found for file %s: %zu\n", n->name, n->seconds);
+            free(n);
+        }
+    }
+    free(line);
+
     for (selector *item = listbegin(selectors); item != listend(selectors); ++item)
     {
-        puts("--item--");
         switch (item->type)
         {
+            case begin:
+                {
+                    break;
+                }
             case daily:
                 {
-                    puts("daily");
                     break;
                 }
             case weekly:
                 {
-                    puts("weekly");
                     break;
                 }
             case monthly:
                 {
-                    puts("monthly");
                     break;
                 }
             case yearly:
                 {
-                    puts("yearly");
-                    break;
-                }
-            default:
-                {
-                    puts("ERROR");
                     break;
                 }
         }
-        printf("Count: %zu\n", item->count);
-        printf("Specifier: %zu\n", item->specifier);
-        printf("Every: %u\n", item->every);
     }
 
     freeselectorlist(selectors);
