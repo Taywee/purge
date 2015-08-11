@@ -32,9 +32,6 @@ typedef struct _node
     time_t years; 
 } node;
 
-// static initialization sets everything to zero.
-static const node emptynode;
-
 /**
  * Make a node from a filename and other information.
  *
