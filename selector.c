@@ -18,7 +18,17 @@
 #include <string.h>
 #include <stdio.h>
 
-selector paseselector(const char * const option, stype const type)
+struct _selectorlist
+{
+    selector *selectors;
+    size_t count;
+    size_t reserved;
+};
+
+// Used for null-initialization
+static const selectorlist EMPTYLIST;
+
+selector selectorparse(const char * const option, stype const type)
 {
     selector output;
     output.type = type;
@@ -82,31 +92,54 @@ selector paseselector(const char * const option, stype const type)
     return output;
 }
 
-void addselector(selectorlist list, selector *item)
+selectorlist *selectorlistnew(void)
 {
-    ++listsize(list);
-    if (listsize(list) == listreserved(list))
-    {
-        listreserved(list) *= 2;
+    selectorlist *output = malloc(sizeof(selectorlist));
+    *output = EMPTYLIST;
+    // Reserve one spot so that the resize math works without special cases
+    output->selectors = malloc(sizeof(selector));
+    output->count = 0;
+    output->reserved = 1;
+    return output;
+}
 
-        selectorlist newlist = realloc(list, listreserved(list) * sizeof(selector));
+void selectorlistfree(selectorlist *list)
+{
+    free(list->selectors);
+    free(list);
+}
+
+void selectorlistadd(selectorlist * list, selector const * const item)
+{
+    if (list->count == list->reserved)
+    {
+        list->reserved *= 2;
+
+        selector *newlist = realloc(list->selectors, list->reserved * sizeof(selector));
         if (newlist)
         {
-            list = newlist;
+            list->selectors = newlist;
         } else
         {
             fputs("Realloc failed!  Program can not be trusted to execute properly!  Exiting now with failure!", stderr);
             exit(EXIT_FAILURE);
         }
     }
-    list[listsize(list)] = *item;
+    list->selectors[list->count] = *item;
+    ++(list->count);
 }
 
-selectorlist makeselectorlist(void)
+extern selector * selectorlistbegin(selectorlist * const list)
 {
-    selectorlist selectors = malloc(sizeof(selector) * 1);
-    selectors[0].type = begin;
-    selectors[0].count = 0;
-    selectors[0].specifier = 1;
-    return selectors;
+    return list->selectors;
+}
+
+extern selector * selectorlistend(selectorlist * const list)
+{
+    return list->selectors + list->count;
+}
+
+extern size_t selectorlistsize(selectorlist const * const list)
+{
+    return list->count;
 }

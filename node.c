@@ -17,15 +17,24 @@
 #include "node.h"
 #include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
-// static initialization sets everything to zero.
-static const node emptynode;
+struct _nodelist
+{
+    node **nodes;
+    size_t count;
+    size_t reserved;
+};
 
-node *makenode(const char * const filename, const char * timestamp, const char * const timeformat)
+// static initialization sets everything to zero.
+static const node EMPTYNODE;
+static const nodelist EMPTYLIST;
+
+node *nodemake(const char * const filename, const char * timestamp, const char * const timeformat)
 {
     // zero-initialize tm
-    struct tm tm = emptynode.tm;
+    struct tm tm = EMPTYNODE.tm;
 
     if (strptime(timestamp, timeformat, &tm))
     {
@@ -45,4 +54,66 @@ node *makenode(const char * const filename, const char * timestamp, const char *
     {
         return NULL;
     }
+}
+
+extern void nodefree(node *n)
+{
+    free(n->name);
+    free(n);
+}
+
+nodelist *nodelistnew(void)
+{
+    nodelist *output = malloc(sizeof(nodelist));
+    *output = EMPTYLIST;
+    // Reserve one spot so that the resize math works without special cases
+    output->nodes = malloc(sizeof(node));
+    output->count = 0;
+    output->reserved = 1;
+    return output;
+}
+
+void nodelistfree(nodelist *list)
+{
+    for (node **item = nodelistbegin(list); item != nodelistend(list); ++item)
+    {
+        nodefree(*item);
+    }
+    free(list->nodes);
+    free(list);
+}
+
+void nodelistadd(nodelist * list, node * item)
+{
+    if (list->count == list->reserved)
+    {
+        list->reserved *= 2;
+
+        node **newlist = realloc(list->nodes, list->reserved * sizeof(node *));
+        if (newlist)
+        {
+            list->nodes = newlist;
+        } else
+        {
+            fputs("Realloc failed!  Program can not be trusted to execute properly!  Exiting now with failure!", stderr);
+            exit(EXIT_FAILURE);
+        }
+    }
+    list->nodes[list->count] = item;
+    ++(list->count);
+}
+
+extern node ** nodelistbegin(nodelist * const list)
+{
+    return list->nodes;
+}
+
+extern node ** nodelistend(nodelist * const list)
+{
+    return list->nodes + list->count;
+}
+
+extern size_t nodelistsize(nodelist const * const list)
+{
+    return list->count;
 }

@@ -16,7 +16,9 @@
  */
 #pragma once
 #define _XOPEN_SOURCE
+#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
+#endif
 #include <time.h>
 
 typedef struct _node
@@ -38,6 +40,19 @@ typedef struct _node
  * \param filename The filename to pass in.
  * \param timestamp The timestamp string to match. Used as the "s" argument in strptime.
  * \param timeformat The time formatter to use. Used as the "format" argument in strptime.
- * \returns The node.  Pass into freenode to free it.  If you free it directly, you will leak memory.
+ * \returns The node.  Pass into nodefree to free it.  If you free it directly, you will leak memory.
  */
-extern node *makenode(const char * const filename, const char * timestamp, const char *timeformat);
+extern node *nodemake(const char * const filename, const char * timestamp, const char *timeformat);
+extern void nodefree(node *n);
+
+struct _nodelist;
+typedef struct _nodelist nodelist;
+
+extern nodelist * nodelistnew(void);
+extern void nodelistfree(nodelist *list);
+
+/// Add the item to the list.  The item will be freed with the rest of the list.
+extern void nodelistadd(nodelist * list, node * item);
+extern node ** nodelistbegin(nodelist * const list);
+extern node ** nodelistend(nodelist * const list);
+extern size_t nodelistsize(nodelist const * const list);

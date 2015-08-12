@@ -30,8 +30,7 @@ static void usage(const char * const progname);
 
 int main(int argc, char **argv)
 {
-    // days, weeks, months, years
-    selectorlist selectors = makeselectorlist();
+    selectorlist *selectors = selectorlistnew();
 
     int opt;
     bool splittime = false;
@@ -43,8 +42,8 @@ int main(int argc, char **argv)
         {
             case 'd':
                 {
-                    selector s = paseselector(optarg, daily);
-                    addselector(selectors, &s);
+                    selector s = selectorparse(optarg, daily);
+                    selectorlistadd(selectors, &s);
                     break;
                 }
             case 'f':
@@ -65,8 +64,8 @@ int main(int argc, char **argv)
                 }
             case 'm':
                 {
-                    selector s = paseselector(optarg, monthly);
-                    addselector(selectors, &s);
+                    selector s = selectorparse(optarg, monthly);
+                    selectorlistadd(selectors, &s);
                     break;
                 }
             case 'r':
@@ -81,14 +80,14 @@ int main(int argc, char **argv)
                 }
             case 'w':
                 {
-                    selector s = paseselector(optarg, weekly);
-                    addselector(selectors, &s);
+                    selector s = selectorparse(optarg, weekly);
+                    selectorlistadd(selectors, &s);
                     break;
                 }
             case 'y':
                 {
-                    selector s = paseselector(optarg, yearly);
-                    addselector(selectors, &s);
+                    selector s = selectorparse(optarg, yearly);
+                    selectorlistadd(selectors, &s);
                     break;
                 }
             default:
@@ -103,6 +102,7 @@ int main(int argc, char **argv)
     char *line = NULL;
     ssize_t size = 0;
     size_t bufsize = 0;
+    nodelist *n = nodelistnew();
     while ((size = getline(&line, &bufsize, stdin)) != -1)
     {
         line[size - 1] = '\0';
@@ -129,23 +129,20 @@ int main(int argc, char **argv)
 
         printf("Filename: %s\n", filename);
         printf("Timestamp: %s\n", timestamp);
-        node *n = makenode(filename, timestamp, formatter);
-        if (n)
+        node *item = nodemake(filename, timestamp, formatter);
+        if (item)
         {
-            printf("Proper timestamp found for file %s: %zu\n", n->name, n->seconds);
-            free(n);
+            printf("Proper timestamp found for file %s: %zu\n", item->name, item->seconds);
+            nodelistadd(n, item);
         }
     }
     free(line);
+    nodelistfree(n);
 
-    for (selector *item = listbegin(selectors); item != listend(selectors); ++item)
+    for (selector *item = selectorlistbegin(selectors); item != selectorlistend(selectors); ++item)
     {
         switch (item->type)
         {
-            case begin:
-                {
-                    break;
-                }
             case daily:
                 {
                     break;
@@ -165,7 +162,7 @@ int main(int argc, char **argv)
         }
     }
 
-    freeselectorlist(selectors);
+    selectorlistfree(selectors);
 
     return 0;
 }
