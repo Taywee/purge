@@ -44,10 +44,12 @@ yearly backup for January, it means to keep 1 yearly January backup (the most
 recent January), not to retain at least 1 backup that is at least a year old.
 Come January, you will only have 1 yearly backup from your present month.
 
-The timestamps are strict, even when they are not supplied enough information.
-This means that if you have a pattern of just year and month, the day of month
-will be assumed to be 1, and hour, minute, and second will all be 0.  If you
-specify a monthday match of the 2nd, it will not match any such timestamps.
+The timestamps are loose, but assumptions are made when not supplied enough
+information.  This means that if you have a pattern of just year and month, the
+day of month will be assumed to be 1, and hour, minute, and second will all be
+0.  If you specify a monthday match of the 2nd, it will not match any such
+timestamps.  If you specify a monthday of 1 but have hourly backups, it
+will only match the first such matching file.
 
 Each retention specifier is handled individually, and may be used more than
 once.  This means that multiple specifiers may (intentionally) have overlap.
@@ -60,10 +62,10 @@ Time formatter is specified with -f.
 
 The retention specifiers are as follows:
 
-daily:      -d  specifier is not used
-weekday:    -w  specifier is day of week, as in crontab, 0=Sunday. Default = 0
-monthday:   -m  specifier is day of month. Default = 1.
-yearmonth:  -y  specifier is month of year, starting with 1. default = 1.
+daily:      -d  specifier is not used.  Will match first backup of its day, ignoring seconds, minutes, and hours.
+weekday:    -w  specifier is day of week, as in crontab, 0=Sunday. Default = 0. Will match first backup of its day, ignoring seconds, minutes, and hours.
+monthday:   -m  specifier is day of month. Default = 1. Will match first backup of its day, ignoring seconds, minutes, and hours.
+yearmonth:  -y  specifier is month of year, starting with 1. default = 1. Will match first backup of its month, ignoring days, seconds, minutes, and hours.
 
 examples:
 

@@ -39,6 +39,7 @@ node *nodemake(const char * const filename, const char * timestamp, const char *
     if (strptime(timestamp, timeformat, &tm))
     {
         node *output = malloc(sizeof(node));
+        output->keep = false;
         output->tm = tm;
         // Ignore timezones.  If the timestamp expresses a sunday at midnight, and you did local time, it could actually think the file is a saturday, based on gmtime.
         output->seconds = timegm(&output->tm);
@@ -60,6 +61,13 @@ extern void nodefree(node *n)
 {
     free(n->name);
     free(n);
+}
+
+int nodecompare(const void *a, const void *b)
+{
+    node const * const * const nodea = a;
+    node const * const * const nodeb = b;
+    return (long)(*nodeb)->seconds - (long)(*nodea)->seconds;
 }
 
 nodelist *nodelistnew(void)

@@ -20,6 +20,7 @@
 #define _DEFAULT_SOURCE
 #endif
 #include <time.h>
+#include <stdbool.h>
 
 typedef struct _node
 {
@@ -32,6 +33,7 @@ typedef struct _node
     time_t weeks; 
     time_t months; 
     time_t years; 
+    bool keep;
 } node;
 
 /**
@@ -44,6 +46,7 @@ typedef struct _node
  */
 extern node *nodemake(const char * const filename, const char * timestamp, const char *timeformat);
 extern void nodefree(node *n);
+extern int nodecompare(const void *a, const void *b);
 
 struct _nodelist;
 typedef struct _nodelist nodelist;
@@ -56,3 +59,4 @@ extern void nodelistadd(nodelist * list, node * item);
 extern node ** nodelistbegin(nodelist * const list);
 extern node ** nodelistend(nodelist * const list);
 extern size_t nodelistsize(nodelist const * const list);
+

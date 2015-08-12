@@ -99,10 +99,11 @@ int main(int argc, char **argv)
         }
     }
 
+    // Iterate lines of input
     char *line = NULL;
     ssize_t size = 0;
     size_t bufsize = 0;
-    nodelist *n = nodelistnew();
+    nodelist *nodes = nodelistnew();
     while ((size = getline(&line, &bufsize, stdin)) != -1)
     {
         line[size - 1] = '\0';
@@ -127,41 +128,101 @@ int main(int argc, char **argv)
             timestamp = line;
         }
 
-        printf("Filename: %s\n", filename);
-        printf("Timestamp: %s\n", timestamp);
         node *item = nodemake(filename, timestamp, formatter);
+
+        // Add the node if the timestamp was properly available
         if (item)
         {
-            printf("Proper timestamp found for file %s: %zu\n", item->name, item->seconds);
-            nodelistadd(n, item);
+            nodelistadd(nodes, item);
         }
     }
     free(line);
-    nodelistfree(n);
 
-    for (selector *item = selectorlistbegin(selectors); item != selectorlistend(selectors); ++item)
+    // Sort the nodes in reverse timestamp order, putting the newest ones at the front
+    qsort(nodelistbegin(nodes), nodelistsize(nodes), sizeof(node *), nodecompare);
+
+    for (selector *sel = selectorlistbegin(selectors); sel != selectorlistend(selectors); ++sel)
     {
-        switch (item->type)
+        unsigned int matches = 0;
+        size_t lastmatch = 0;
+        for (node **nodp = nodelistbegin(nodes); nodp != nodelistend(nodes); ++nodp)
         {
-            case daily:
-                {
-                    break;
-                }
-            case weekly:
-                {
-                    break;
-                }
-            case monthly:
-                {
-                    break;
-                }
-            case yearly:
-                {
-                    break;
-                }
+            // Kick out if we've made our match quota
+            if (matches >= sel->count)
+            {
+                break;
+            }
+
+            node * const nod = *nodp;
+
+            // To match the specifier
+            time_t nodespec;
+            // To do the every and also lastmatch
+            time_t nodemoditem;
+
+            switch (sel->type)
+            {
+                case daily:
+                    {
+                        nodespec = sel->specifier;
+                        nodemoditem = nod->days;
+                        break;
+                    }
+                case weekly:
+                    {
+                        nodespec = nod->tm.tm_wday;
+                        nodemoditem = nod->weeks;
+                        break;
+                    }
+                case monthly:
+                    {
+                        nodespec = nod->tm.tm_mday;
+                        nodemoditem = nod->months;
+                        break;
+                    }
+                case yearly:
+                    {
+                        nodespec = nod->tm.tm_mon + 1;
+                        nodemoditem = nod->years;
+                        break;
+                    }
+            }
+
+            // If we've already matched an item in the same period, skip to the next
+            if (nodemoditem == lastmatch)
+            {
+                continue;
+            } else if ((nodespec == sel->specifier) && (nodemoditem % sel->every == 0))
+            {
+                ++matches;
+                lastmatch = nodemoditem;
+
+                // We don't check keep first, because different selectors can all match the same node
+                nod->keep = true;
+            }
+        }
+
+        // If we didn't fill enough matches, iterate from the oldest nodes, marking all as keeps until we either hit the right count or run out of nodes
+        // The only way we'll run out of nodes is if the count is higher than the total number of nodes in the list.
+        node **nodp = nodelistend(nodes);
+        while ((matches < sel->count) && (nodp != nodelistbegin(nodes)))
+        {
+            node * const nod = *(--nodp);
+            nod->keep = true;
+            ++matches;
         }
     }
+    for (node **nodp = nodelistbegin(nodes); nodp != nodelistend(nodes); ++nodp)
+    {
+        node * const nod = *nodp;
 
+        // If remove is true, we want to show nodes where keep is false, and vice versa
+        if (nod->keep != remove)
+        {
+            puts(nod->name);
+        }
+    }
+    nodelistfree(nodes);
     selectorlistfree(selectors);
 
     return 0;
