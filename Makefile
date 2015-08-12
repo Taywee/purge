@@ -1,4 +1,4 @@
-CC=clang
+CC=gcc
 CFLAGS=-c -ansi -Wall -Wextra -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -std=c99 -MMD -MP -O2
 LDFLAGS=-s 
 SOURCES=main.c node.c selector.c
