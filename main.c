@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE 500
+#define _XOPEN_SOURCE 600
 #define _DEFAULT_SOURCE 500
 #include <stdbool.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     int opt;
     bool splittime = false;
     bool remove = true;
-    const char * formatter = "%FT%T";
+    const char * formatter = "%Y-%m-%d";
     while ((opt = getopt(argc, argv, "d:f:hkm:rsw:y:")) != -1)
     {
         switch (opt)
@@ -237,8 +237,8 @@ int main(int argc, char **argv)
 
 void usage(const char * const progname)
 {
-    printf("%s:\n"
-            "\tSmall console program that specifically sorts and selects timestamped\n"
+    printf("%s:\n", progname);
+    puts("\tSmall console program that specifically sorts and selects timestamped\n"
             "\tfile/directory sets based on a retention scheme, in order to remove them\n"
             "\tand stay on a strict and predictable retention schedule.\n\n"
 
@@ -254,7 +254,7 @@ void usage(const char * const progname)
             "\t-m [selector]   Add a monthly selector to the list\n"
             "\t-y [selector]   Add a yearly selector to the list\n"
             "\t-f [formatter]  Specify the time formatter (normally defaults to\n"
-            "\t                \"%%FT%%T\"). If -s is used, this formatter may not have slashes.\n"
+            "\t                \"%Y-%m-%d\"). If -s is used, this formatter may not have slashes.\n"
             "\t-h              Display this help menu.\n"
             "\t-k              Output files to keep instead of ones to remove.\n"
             "\t-r              Output files to remove instead of ones to keep.\n"
@@ -268,5 +268,5 @@ void usage(const char * const progname)
             "\tsoftware, and you are welcome to redistribute it under the terms\n"
             "\tof the GNU General Public License as published by the Free Software\n"
             "\tFoundation, either version 3 of the License, or (at your option)\n"
-            "\tany later version.\n", progname);
+            "\tany later version.");
 }
