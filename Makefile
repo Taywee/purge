@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS=-c -Wall -std=c99 -MMD -MP
-LDFLAGS=
+CFLAGS=-c -ansi -Wall -Wextra -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -std=c99 -MMD -MP -O2
+LDFLAGS=-s 
 SOURCES=main.c node.c selector.c
 OBJECTS=$(SOURCES:.c=.o)
 DEPENDENCIES=$(SOURCES:.c=.d)

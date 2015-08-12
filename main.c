@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     for (selector *sel = selectorlistbegin(selectors); sel != selectorlistend(selectors); ++sel)
     {
         unsigned int matches = 0;
-        size_t lastmatch = 0;
+        time_t lastmatch = 0;
         for (node **nodp = nodelistbegin(nodes); nodp != nodelistend(nodes); ++nodp)
         {
             // Kick out if we've made our match quota
@@ -185,6 +185,13 @@ int main(int argc, char **argv)
                         nodespec = nod->tm.tm_mon + 1;
                         nodemoditem = nod->years;
                         break;
+                    }
+                default:
+                    {
+                        // If the selector can not be recognized, force it to not match any nodes
+                        // It will simply match its count in the oldest nodes in this case.
+                        nodespec = ~sel->specifier;
+                        nodemoditem = lastmatch;
                     }
             }
 
