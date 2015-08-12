@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE
-#define _DEFAULT_SOURCE
+#define _XOPEN_SOURCE 500
+#define _DEFAULT_SOURCE 500
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdio.h>

@@ -15,10 +15,29 @@
  * along with retain.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "node.h"
-#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+time_t my_timegm(struct tm *tm)
+{
+    time_t ret;
+    char *tz;
+
+    tz = getenv("TZ");
+    if (tz)
+        tz = strdup(tz);
+    setenv("TZ", "", 1);
+    tzset();
+    ret = mktime(tm);
+    if (tz) {
+        setenv("TZ", tz, 1);
+        free(tz);
+    } else
+        unsetenv("TZ");
+    tzset();
+    return ret;
+}
 
 struct _nodelist
 {
@@ -42,13 +61,13 @@ node *nodemake(const char * const filename, const char * timestamp, const char *
         output->keep = false;
         output->tm = tm;
         // Ignore timezones.  If the timestamp expresses a sunday at midnight, and you did local time, it could actually think the file is a saturday, based on gmtime.
-        output->seconds = timegm(&output->tm);
+        output->seconds = my_timegm(&output->tm);
         output->days = output->seconds / 86400;
         output->weeks = output->days / 7;
         output->years = output->tm.tm_year - 70;
         output->months = (output->years * 12) + output->tm.tm_mon;
 
-        output->name = strndup(filename, PATH_MAX);
+        output->name = strdup(filename);
         
         return (output);
     } else
