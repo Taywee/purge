@@ -1,13 +1,13 @@
-Name:		    retain
-Version:	    1.0
-Release:	    0%{?dist}
-Summary:	    file retention calculator for backups
+Name:           retain
+Version:        1.0
+Release:        0%{?dist}
+Summary:        file retention calculator for backups
 
-Group:		    Applications/Productivity
-License:	    GPLv3+
-URL:		    https://github.com/Taywee/retain
-Source:	        %{name}-%{version}.%{release}.tar.gz
-BuildRequires:	gcc
+Group:          Applications/Productivity
+License:        GPLv3+
+URL:            https://github.com/Taywee/retain
+Source:         %{name}-%{version}.tar.gz
+BuildRequires:  gcc
 
 %description
 Small console program that specifically sorts and selects timestamped
