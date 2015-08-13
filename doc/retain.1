@@ -58,7 +58,10 @@ around).
 Remember that the \fIcount\fR is a literal count, not a period.  If you specify
 1 yearly backup for January, it means to keep 1 yearly January backup (the most
 recent January), not to retain at least 1 backup that is at least a year old.
-Come January, you will only have 1 yearly backup from your present month.
+Come January, you will only have 1 yearly backup from your present month.  To
+specify a minimum period, calculate as :
+.P
+    \fIcount\fR = (\fIperiod\fR / \fIevery\fR) + 1
 
 Each selector is handled individually, and may be used more than once.  This
 means that multiple selectors may (intentionally) have overlap.
@@ -103,27 +106,27 @@ separated from the actual filename by a slash (like \fItimestamp/filename\fR, or
 returns 0 on successful execution, and 1 otherwise
 .SH EXAMPLE
 
-# A week of dailies
+# A week of dailies:
 
 retain -d 7
 
-# Every other day for a month
+# Every other day for a month:
 
 retain -d 15/2
 
-# Every Sunday for a month
+# Every Sunday for a month:
 
 retain -w 4:0
 
-# Every other Saturday for two months
+# Every other Saturday for two months:
 
 retain -w 4:6/2
 
-# Two times a month, at the beginning and middle, for a year
+# Two times a month, at the beginning and middle, for a year:
 
 retain -m 12:1 -m 12:15
 
-# A yearly backup on January that lasts 10 years
+# A yearly backup on January that lasts 10 years:
 
 retain -y 10:1
 
@@ -133,3 +136,7 @@ day (9 backups), 8 weeks of weeklies, 6 months of monthlies, one year of
 every other month, and 7 years of yearly backups:
 
 ls -1 | retain -f backup-%Y-%m-%d.gz -d 14 -d 9/3 -w 8 -m 6 -m 6/2 -y 7 | xargs rm -v
+
+# To perform the same previous retention scheme for a list of files that don't have timestamps embedded in their filenames, judging based on mtime instead:
+
+stat -c %Y/%n * | retain -sf %s -d 14 -d 9/3 -w 8 -m 6 -m 6/2 -y 7 | xargs rm -v

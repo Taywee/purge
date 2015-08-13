@@ -9,6 +9,7 @@
 *.obj
 *.elf
 *.d
+*.bz2
 
 # Precompiled Headers
 *.gch

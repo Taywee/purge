@@ -19,7 +19,7 @@ standard input, newline-separated), a time formatter, and a list of retention
 rules, and it will output which ones should be deleted.
 
 %prep
-%setup -q
+%setup -q -n %{name}
 
 %build
 make CC=gcc %{?_smp_mflags}
@@ -28,7 +28,9 @@ make CC=gcc %{?_smp_mflags}
 make install DESTDIR=%{buildroot}/usr
 
 %files
-/usr/bin/%{name}
+%doc README.md LICENSE
+%{_bindir}/%{name}
+%{_mandir}/man1/%{name}.1.gz
 
 %changelog
 
