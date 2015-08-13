@@ -6,7 +6,7 @@ Summary:	    file retention calculator for backups
 Group:		    Applications/Productivity
 License:	    GPLv3+
 URL:		    https://github.com/Taywee/retain
-Source:	        %{name}-%{version}.tar.gz
+Source:	        %{name}-%{version}.%{release}.tar.gz
 BuildRequires:	gcc
 
 %description
