@@ -7,7 +7,7 @@ taking place.  You feed this program the list of file or directory names (on
 standard input, newline-separated), a time formatter, and a list of retention
 rules, and it will output which ones should be deleted.
 
-Timestamps may be stored in any format that strptime will understand.
+Timestamps may be described in any format that strptime will understand.
 
 Inputs that do not match the timestamp format at the beginning of their strings
 will not be considered, and will not be output for either a keep or a delete
@@ -18,7 +18,7 @@ mtime (or anywhere else you may have it), and emplace it at the front of the
 string, separated with a slash from the filename, specifying this behavior with
 -s.
 
-Timestamp format is usually `[count]{:[specifier]}{/every}`, where `every` is 1
+Selector format is usually `[count]{:[specifier]}{/every}`, where `every` is 1
 by default.
 For example, if you want weekly backups on Sundays, skipping 2 (So you'd have
 Sunday, skip 2 Sundays, etc), retaining 7 copies, you'd just specify the -w
@@ -70,19 +70,34 @@ yearmonth:  -y  specifier is month of year, starting with 1. default = 1. Will m
 examples:
 
 ### A week of dailies
--d 7
+retain -d 7
 
 ### Every other day for a month
--d 15/2
+retain -d 15/2
 
 ### Every Sunday for a month
--w 4:0
+retain -w 4:0
 
 ### Every other Saturday for two months
--w 4:6/2
+retain -w 4:6/2
 
 ### Two times a month, at the beginning and middle, for a year
--m 24:1,15
+retain -m 12:1 -m 12:15
 
 ### A yearly backup on January that lasts 10 years
--y 10:1
+retain -y 10:1
+
+# Author
+retain is Copyright (C) 2015 Taylor C. Richberger
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.

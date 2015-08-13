@@ -1,0 +1,135 @@
+.TH RETAIN 1 2015-08-13 GNU
+.SH NAME
+retain \- file retention calculator for backups
+.SH SYNOPSIS
+.B retain
+[\fIOPTION\fR]...
+.SH DESCRIPTION
+.B retain
+specifically sorts and selects timestamped file/directory sets based on a
+retention scheme
+
+This assumes that daily backups (or some similar backup scheme) are already
+taking place.  You feed this program the list of file or directory names (on
+standard input, newline-separated), a time formatter, and a list of retention
+rules, and it will output which ones should be deleted.
+
+This does mean that (for portability and flexibility reasons) this program will
+not delete any files.  This is a conscious decision, in case you want to do
+further tests on the selected files, or you need to remove them in a specific
+way (such as a remotely executed command, or a filesystem subvolume delete).
+
+Timestamps may be described in any format that strptime will understand.
+
+By default, timestamps are extracted from the filenames.
+
+The timestamps are loose, but assumptions are made when not supplied enough
+information.  This means that if you have a pattern of just year and month, the
+day of month will be assumed to be 1, and hour, minute, and second will all be
+0.  If you specify a monthday match of the 2nd, it will not match any such
+timestamps.  If you specify a monthday of 1 but have hourly backups, it
+will only match the first such matching file.
+
+.SS Selector format
+
+Selector format is usually `[\fIcount\fR]{:[\fIspecifier\fR]}{/\fIevery\fR}`,
+where `every` is 1 by default.
+For example, if you want weekly backups on Sundays, skipping 2 (So you'd have
+Sunday, skip 2 Sundays, etc), retaining 7 copies, you'd just specify the -w
+flag as `-w '7:0/3'` or even just `-w 7:3`.
+The specifier matches its cron counterpart (not its tm counterpart, meaning
+months start at 1)
+The specifier is 0 as default, except monthly and yearly's specifiers, which
+default to 1.  The specifier is not used for daily.
+
+In order to remain consistent, the \fIevery\fR is judged as an extension of the
+Unix epoch, and times are judged based on the latest timestamp in the
+directory, not present time.  Gaps are accounted for, so if you have 7 weekly
+backups, but you have a 3-month gap between 3 and the other 4 of them, all 7
+will be kept. Similarly, if there aren't enough backups, the rest will "bunch
+up" at the end, so if you have a set of dailies going back 3 weeks, but specify
+retention of 7 weeklies, you'll get 3 weeklies and the other 4 oldest backups
+in the set.  This is primarily done to ease filesystem use prediction and to
+keep backups near the beginning of an active scheme from being so thin (and
+also for things like yearlies, if you wanted to keep a January, but had set it
+up on February, it will keep a February until the next January backup comes
+around).
+
+Remember that the \fIcount\fR is a literal count, not a period.  If you specify
+1 yearly backup for January, it means to keep 1 yearly January backup (the most
+recent January), not to retain at least 1 backup that is at least a year old.
+Come January, you will only have 1 yearly backup from your present month.
+
+Each selector is handled individually, and may be used more than once.  This
+means that multiple selectors may (intentionally) have overlap.
+
+.SH OPTIONS
+.TP
+.BR \-d " " \fIselector\fR
+Add a daily selector to the list.  The specifier is not used.
+.TP
+.BR \-w " " \fIselector\fR
+Add a weekly selector to the list. The specifier is day of week, starting at 0
+as sunday.
+.TP
+.BR \-m " " \fIselector\fR
+Add a monthly selector to the list. The specifier is the day of month, starting
+at 1
+.TP
+.BR \-y " " \fIselector\fR
+Add a yearly selector to the list. The specifier is month of year, starting at
+1
+.TP
+.BR \-f " " \fIformatter\fR
+Specify the time formatter (normally defaults to "%Y-%m-%d"). If -s is used,
+this formatter may not have slashes.
+.TP
+.BR \-h
+Display this help menu.
+.TP
+.BR \-k
+Output files to keep instead of ones to remove.  Latest specified of -k and -r
+takes precedence.
+.TP
+.BR \-r
+Output files to remove instead of ones to keep.  Latest specified of -k and -r
+takes precedence. (this is the default behavior)
+.TP
+.BR \-s
+Take the timestamp as a separate string, specified first on the line and
+separated from the actual filename by a slash (like \fItimestamp/filename\fR, or
+\fItimestamp//path/to/file\fR for an absolute path).
+.SH EXIT STATUS
+returns 0 on successful execution, and 1 otherwise
+.SH EXAMPLE
+
+# A week of dailies
+
+retain -d 7
+
+# Every other day for a month
+
+retain -d 15/2
+
+# Every Sunday for a month
+
+retain -w 4:0
+
+# Every other Saturday for two months
+
+retain -w 4:6/2
+
+# Two times a month, at the beginning and middle, for a year
+
+retain -m 12:1 -m 12:15
+
+# A yearly backup on January that lasts 10 years
+
+retain -y 10:1
+
+# To delete files in the current directory named (as the date format)
+\fBbackup-%Y-%m-%d.gz\fR, keeping 2 weeks of dailies, 4 weeks of every third
+day (9 backups), 8 weeks of weeklies, 6 months of monthlies, one year of
+every other month, and 7 years of yearly backups:
+
+ls -1 | retain -f backup-%Y-%m-%d.gz -d 14 -d 9/3 -w 8 -m 6 -m 6/2 -y 7 | xargs rm -v
