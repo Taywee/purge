@@ -17,7 +17,8 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 install: $(EXECUTABLE)
-	install $(EXECUTABLE) $(DESTDIR)/bin
+	install -d $(DESTDIR)/bin
+	install $(EXECUTABLE) $(DESTDIR)/bin/
 
 uninstall: $(EXECUTABLE)
 	rm $(DESTDIR)/bin/$(EXECUTABLE)
