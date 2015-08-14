@@ -15,10 +15,6 @@
  * along with retain.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
-#define _XOPEN_SOURCE 600
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE 500
-#endif
 #include <time.h>
 #include <stdbool.h>
 

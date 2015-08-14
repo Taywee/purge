@@ -19,9 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define _BSD_SOURCE 
-#define _POSIX_C_SOURCE 200112L
-#define _XOPEN_SOURCE 600
 #include <stdlib.h>
 time_t my_timegm(struct tm *tm)
 {
