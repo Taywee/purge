@@ -5,8 +5,8 @@ Summary:        file retention calculator for backups
 
 Group:          Applications/Productivity
 License:        GPLv3+
-URL:            https://github.com/Taywee/retain
-Source:         %{name}-%{version}.tar.gz
+URL:            https://github.com/Taywee/%{name}
+Source:         https://github.com/Taywee/%{name}/archive/%{version}.tar.gz
 BuildRequires:  gcc
 
 %description
@@ -19,7 +19,7 @@ standard input, newline-separated), a time formatter, and a list of retention
 rules, and it will output which ones should be deleted.
 
 %prep
-%setup -q -n %{name}
+%setup -q
 
 %build
 make CC=gcc %{?_smp_mflags}
