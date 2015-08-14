@@ -1,6 +1,7 @@
 CC=gcc
 DESTDIR=/usr
-CFLAGS=-c -ansi -Wall -Wextra -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -std=c99 -MMD -MP -O2 -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE=500 -DBSD_SOURCE -D_POSIX_C_SOURCE=200112L
+DEFINES=-D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE=500 -DBSD_SOURCE -D_POSIX_C_SOURCE=200112L
+CFLAGS=-c -ansi -Wall -Wextra -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -std=c99 -MMD -MP -O2
 LDFLAGS=-s 
 SOURCES=main.c node.c selector.c
 OBJECTS=$(SOURCES:.c=.o)
@@ -29,4 +30,4 @@ clean :
 	rm $(EXECUTABLE) $(OBJECTS) $(DEPENDENCIES)
 
 .c.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $< -o $@
