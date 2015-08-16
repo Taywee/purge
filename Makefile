@@ -29,5 +29,5 @@ uninstall: $(EXECUTABLE)
 clean :
 	rm $(EXECUTABLE) $(OBJECTS) $(DEPENDENCIES)
 
-.c.o:
+%.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $< -o $@
