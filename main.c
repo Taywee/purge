@@ -33,11 +33,17 @@ int main(int argc, char **argv)
     int opt;
     bool splittime = false;
     bool remove = true;
+    bool nullsep = false;
     const char * formatter = "%Y-%m-%d";
-    while ((opt = getopt(argc, argv, "d:f:hkm:rsw:y:")) != -1)
+    while ((opt = getopt(argc, argv, "0d:f:hkm:rsw:y:")) != -1)
     {
         switch (opt)
         {
+            case '0':
+                {
+                    nullsep = true;
+                    break;
+                }
             case 'd':
                 {
                     selector s = selectorparse(optarg, daily);
@@ -217,6 +223,7 @@ int main(int argc, char **argv)
             ++matches;
         }
     }
+
     for (node **nodp = nodelistbegin(nodes); nodp != nodelistend(nodes); ++nodp)
     {
         node * const nod = *nodp;
@@ -224,7 +231,15 @@ int main(int argc, char **argv)
         // If remove is true, we want to show nodes where keep is false, and vice versa
         if (nod->keep != remove)
         {
-            puts(nod->name);
+            fputs(nod->name, stdout);
+
+            if (nullsep)
+            {
+                putc('\0', stdout);
+            } else
+            {
+                putc('\n', stdout);
+            }
         }
     }
     nodelistfree(nodes);
@@ -247,19 +262,22 @@ void usage(const char * const progname)
             "\tFilenames ordinarily are expected to have an embedded timestamp, though\n"
             "\tthis behavior can be changed through the -s option.\n\n"
 
+            "\t-0              Use a null character to separate output instead of newline\n"
+            "\t                (for better input into xargs)\n"
             "\t-d [selector]   Add a daily selector to the list\n"
             "\t-w [selector]   Add a weekly selector to the list\n"
             "\t-m [selector]   Add a monthly selector to the list\n"
             "\t-y [selector]   Add a yearly selector to the list\n"
             "\t-f [formatter]  Specify the time formatter (normally defaults to\n"
-            "\t                \"%Y-%m-%d\"). If -s is used, this formatter may not have slashes.\n"
+            "\t                \"%Y-%m-%d\"). If -s is used, this formatter may not have\n"
+            "\t                slashes.\n"
             "\t-h              Display this help menu.\n"
             "\t-k              Output files to keep instead of ones to remove.\n"
             "\t-r              Output files to remove instead of ones to keep.\n"
             "\t-s              Take the timestamp as a separate string, specified first on\n"
-            "\t                the line and separated from the actual filename by a slash\n"
-            "\t                (like timestamp/filename, or timestamp//path/to/file for an\n"
-            "\t                absolute path).\n\n"
+            "\t                the line and separated from the actual filename by a slash (like\n"
+            "\t                timestamp/filename, or timestamp//path/to/file for an absolute\n"
+            "\t                path).\n\n"
 
             "\tretain   Copyright (C) 2015  Taylor C. Richberger <taywee@gmx.com>\n"
             "\tThis program comes with ABSOLUTELY NO WARRANTY.  This is free\n"

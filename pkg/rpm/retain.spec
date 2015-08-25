@@ -1,6 +1,6 @@
 Name:           retain
-Version:        1.0
-Release:        2%{?dist}
+Version:        1.1
+Release:        0%{?dist}
 Summary:        file retention calculator for backups
 
 Group:          Applications/Productivity
