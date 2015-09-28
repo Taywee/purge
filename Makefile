@@ -21,10 +21,10 @@ install: $(EXECUTABLE)
 	install -d $(DESTDIR)/bin
 	install -d $(DESTDIR)/share/man/man1
 	install $(EXECUTABLE) $(DESTDIR)/bin/
-	gzip -c doc/retain.1 > $(DESTDIR)/share/man/man1/retain.1.gz
+	gzip -c doc/$(EXECUTABLE).1 > $(DESTDIR)/share/man/man1/$(EXECUTABLE).1.gz
 
-uninstall: $(EXECUTABLE)
-	-rm $(DESTDIR)/bin/$(EXECUTABLE) $(DESTDIR)/share/man/man1/retain.1.gz
+uninstall:
+	-rm $(DESTDIR)/bin/$(EXECUTABLE) $(DESTDIR)/share/man/man1/$(EXECUTABLE).1.gz
 
 clean :
 	rm $(EXECUTABLE) $(OBJECTS) $(DEPENDENCIES)
