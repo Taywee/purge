@@ -32,22 +32,7 @@ selector selectorparse(const char * const option, stype const type)
 {
     selector output;
     output.type = type;
-
-    switch (type)
-    {
-        case monthly:
-        case yearly:
-            {
-                output.specifier = 1;
-                break;
-            }
-        default:
-            {
-                output.specifier = 0;
-                break;
-            }
-    }
-
+    output.specifier = -1;
     output.every = 1;
 
     char const * const colon = strchr(option, ':');
@@ -64,12 +49,11 @@ selector selectorparse(const char * const option, stype const type)
 
     if (colon)
     {
-        output.specifier = strtoul(colon + 1, &endptr, 10);
+        output.specifier = strtol(colon + 1, &endptr, 10);
 
         if (endptr == colon + 1)
         {
-            fprintf(stderr, "You specified a colon, but have not specified a valid specifier for option string \"%s\", so it has been defaulted to 0 (1 for day of month or month of year).\n", option);
-            output.specifier = 0;
+            fprintf(stderr, "You specified a colon, but have not specified a valid specifier for option string \"%s\", so it has been defaulted to -1.\n", option);
         }
     }
 
@@ -79,8 +63,7 @@ selector selectorparse(const char * const option, stype const type)
 
         if (endptr == slash + 1)
         {
-            fprintf(stderr, "You specified a slash, but have not specified a valid every for option string \"%s\", so it has been defaulted to 0 (1 for day of month or month of year).\n", option);
-            output.every = 0;
+            fprintf(stderr, "You specified a slash, but have not specified a valid every for option string \"%s\", so it has been defaulted to 1.\n", option);
         }
     }
 

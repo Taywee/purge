@@ -1,4 +1,4 @@
-.TH RETAIN 1 2015-08-13 GNU
+.TH RETAIN 1 2015-10-16 GNU
 .SH NAME
 retain \- file retention calculator for backups
 .SH SYNOPSIS
@@ -39,8 +39,8 @@ Sunday, skip 2 Sundays, etc), retaining 7 copies, you'd just specify the -w
 flag as `-w '7:0/3'` or even just `-w 7:3`.
 The specifier matches its cron counterpart (not its tm counterpart, meaning
 months start at 1)
-The specifier is 0 as default, except monthly and yearly's specifiers, which
-default to 1.  The specifier is not used for daily.
+If specifier is negative, it just matches the first possible match for its type
+(meaning the latest in its period, usually).  -1 is the default.
 
 In order to remain consistent, the \fIevery\fR is judged as an extension of the
 Unix epoch, and times are judged based on the latest timestamp in the

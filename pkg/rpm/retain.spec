@@ -1,5 +1,5 @@
 Name:           retain
-Version:        1.1
+Version:        1.2
 Release:        0%{?dist}
 Summary:        file retention calculator for backups
 

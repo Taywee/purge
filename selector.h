@@ -28,7 +28,7 @@ typedef enum _stype
 typedef struct _selector {
     stype type;
     unsigned int count;
-    unsigned short specifier;
+    short specifier;
     unsigned short every;
 } selector;
 

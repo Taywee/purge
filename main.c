@@ -194,8 +194,10 @@ int main(int argc, char **argv)
                     {
                         // If the selector can not be recognized, force it to not match any nodes
                         // It will simply match its count in the oldest nodes in this case.
-                        nodespec = ~sel->specifier;
                         nodemoditem = lastmatch;
+
+                        // This is just to squelch some warnings
+                        nodespec = ~sel->specifier;
                     }
             }
 
@@ -203,7 +205,7 @@ int main(int argc, char **argv)
             if (nodemoditem == lastmatch)
             {
                 continue;
-            } else if ((nodespec == sel->specifier) && (nodemoditem % sel->every == 0))
+            } else if (((sel->specifier < 0) || (nodespec == sel->specifier)) && (nodemoditem % sel->every == 0))
             {
                 ++matches;
                 lastmatch = nodemoditem;
